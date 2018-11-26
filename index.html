@@ -119,6 +119,7 @@ function Draft()
 		document.getElementById("btn-confirmPlayers").onclick = onClickConfirmPlayers;
 	}
 	
+	// creates player name list from input list
 	this.onClickConfirmPlayers = function()
 	{
 		var players = [];
@@ -133,8 +134,16 @@ function Draft()
 	
 	this.visualizeDraftData = function(data)
 	{
-		setDraftView("");
-		console.log(data);
+		html = '<div>';
+	
+	
+		html += '</div>';
+		setDraftView(html);
+	}
+	
+	this.createMatchView = function(player1, player2)
+	{
+		
 	}
 	
 	this.init = function()
