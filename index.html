@@ -7,7 +7,145 @@
 		<input type="text" id="input-numPlayers" name="numPlayers">
 	</div>
 	
+	
 	<div id="view-draft"></div>
+	
 	<script src="https://www.gstatic.com/firebasejs/5.5.9/firebase.js"></script>
-	<script src="https://raw.githubusercontent.com/draftmaster/draftmaster.github.io/master/test.js"></script>
+<script>
+
+/*
+Database handles data updates
+*/
+
+function DB()
+{
+	// private
+	var fb = undefined;
+	
+	// public 
+	this.draftdata = {};
+	
+	this.newDraft = function(players)
+	{
+		draftdata = {
+			players: players,
+			results: []
+		}
+		
+		for(var r = 0; r < draft.numRounds(players.length); r++)
+		{
+			draftdata.results.push(new Array(players.length).fill(0));
+		}
+		
+		visualizeDraftData(this.draftdata);
+	}
+	
+	this.init = function()
+	{
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyBhhBAzfvWRvYUZRg2RuXriQ67SPBkiWOg",
+			authDomain: "draftmaster-1c8d9.firebaseapp.com",
+			databaseURL: "https://draftmaster-1c8d9.firebaseio.com",
+			projectId: "draftmaster-1c8d9",
+			storageBucket: "draftmaster-1c8d9.appspot.com",
+			messagingSenderId: "138424849758"
+		};
+
+		// initialize firestore
+		firebase.initializeApp(config);
+		fb = firebase.firestore();
+
+		// Disable deprecated features
+		fb.settings({
+		  timestampsInSnapshots: true
+		});
+	}
+
+	this.init();
+	return this;
+}
+
+database = DB();
+</script>
+<script>
+
+
+/*
+
+Draft view
+User Interaction and database visualization
+
+*/
+function Draft()
+{
+	var setDraftView = function(html)
+	{
+		document.getElementById("view-draft").innerHTML = html;
+	}
+	
+	var getInputValueNumPlayers = function()
+	{
+		return document.getElementById("input-numPlayers").value;
+	}
+	
+	this.numRounds = function(numPlayers)
+	{
+		return Math.ceil(Math.log2(numPlayers));
+	}
+
+	this.numPos1 = function(numPlayers)
+	{
+		return [1,2];
+	}
+
+	this.numPos2 = function(numPlayers)
+	{
+		var min = (Math.ceil(Math.log2(numPlayers) - 2))*2;
+		return [min, min+3];
+	}
+
+	this.onClickNewDraft = function()
+	{
+		var draftViewHtml = '<ul id="input-playerList">';
+		for (var p = 0; p < getInputValueNumPlayers(); p++)
+		{
+			draftViewHtml += '<li><input type="text"></li>';
+		}
+		
+		draftViewHtml += '</ul><button type="button" id="btn-confirmPlayers">Confirm</button>';
+		setDraftView(draftViewHtml);
+		
+		document.getElementById("btn-confirmPlayers").onclick = onClickConfirmPlayers;
+	}
+	
+	this.onClickConfirmPlayers = function()
+	{
+		var players = [];
+		var playerList = document.getElementById("input-playerList").children;
+		for(var i = 0; i < playerList.length; i++)
+		{
+			players.push(playerList[i].firstChild.value);
+		}
+		
+		database.newDraft(players);
+	}
+	
+	this.visualizeDraftData = function(data)
+	{
+		setDraftView("");
+		console.log(data);
+	}
+	
+	this.init = function()
+	{
+		document.getElementById("btn-newDraft").onclick = onClickNewDraft;
+	}
+	
+	this.init();
+	return this;
+}
+
+draft = Draft();
+</script>
 </body>
