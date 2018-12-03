@@ -65,15 +65,7 @@ function DB()
 	this.loadDraftData = function()
 	{
 		DOC_DRAFT = firebase.auth().currentUser.uid;
-		fb.collection(COL_DRAFTS).doc(DOC_DRAFT).get().then(function(doc) {
-			if (doc.exists) {
-				draft.visualizeDraftData(doc.data());
-			} else {
-				createNewDraft();
-			}
-		}).catch(function(error) {
-			createNewDraft();
-		});
+		return fb.collection(COL_DRAFTS).doc(DOC_DRAFT).get();
 	}
 	
 	this.newDraft = function(data)
@@ -578,32 +570,51 @@ var testDraftData = function(){return{
 		}
 	]
 }};
-
-function createNewDraft()
+</script>
+<script>
+function showLoginView()
 {
-	database.newDraft(testDraftData());
+	var login = new LoginView();
+	document.getElementById('view-draft').innerHTML = login.toHtml();
+	login.onViewAdded();		
 }
 
-function onDatabaseInitialised()
+function onInitialised()
 {
 	var user = database.getCurrentUser();
-	if (user == undefined)
-	{
-		var login = new LoginView();
-		document.getElementById('view-draft').innerHTML = login.toHtml();
-		login.onViewAdded();			
-	}
-	else {
+	if (user == undefined) {	
+		showLoginView();
+	} else {
 		onSignedIn();
 	}
 }
 
 function onSignedIn()
 {
-	draft = new DraftView();
-	database.loadDraftData();	
+	loadDraftOrCreateNew();
 }
 
-setTimeout(onDatabaseInitialised, 2000);
+function loadDraftOrCreateNew()
+{
+	draft = new DraftView();
+	
+	database.loadDraftData().then(function(doc) {
+		if (doc.exists) {
+			draft.visualizeDraftData(doc.data());
+		} else {
+			createNewDraft();
+		}
+	}).catch(function(error) {
+		createNewDraft();
+	});
+}
+
+function createNewDraft()
+{
+	database.newDraft(testDraftData());
+}
+
+
+setTimeout(onInitialised, 1000);
 </script>
 </body>
