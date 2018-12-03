@@ -71,12 +71,7 @@ function DB()
 	this.newDraft = function(data)
 	{
 		DOC_DRAFT = firebase.auth().currentUser.uid;
-		fb.collection(COL_DRAFTS).doc(DOC_DRAFT).set(data)
-		.then(function() {
-			draft.visualizeDraftData(data);	
-		}).catch(function(error) {
-			console.log(error);
-		});
+		return fb.collection(COL_DRAFTS).doc(DOC_DRAFT).set(data);
 	}
 	
 	this.updateDraft = function(data)
@@ -166,15 +161,67 @@ function LoginView()
 	
 	return this;
 }
-
 </script>
 <script>
 
 </script>
 <script>
-function DraftHeader(_data)
+function NewDraftView()
 {
-	var data = _data;
+	var playersContainer = undefined;
+	
+	var onAddPlayerClick = function()
+	{
+		// add new player div
+		var html = '<div class="view-newPlayer">';
+		html += '<input class="input-newPlayerName" type="text" placeholder="Name">';
+		html += '<button type="button" class="btn-removeNewPlayer">Remove</button>';
+		playersContainer.innerHTML += html + '</div>';
+		
+		// configure UI
+		var newPlayers = playersContainer.getElementsByClassName('view-newPlayer');
+		for(var i = 0; i < newPlayers.length; i++)
+		{
+			newPlayers[i].getElementsByClassName('btn-removeNewPlayer')[0].onclick = function() {
+				onRemovePlayerClick(i);
+			}
+		}
+	}
+	
+	var onRemovePlayerClick = function(index)
+	{
+		// TODO - passing index not working
+	}
+	
+	var onStartDraftClick = function()
+	{
+		var newPlayers = Array.from(playersContainer.getElementsByClassName('view-newPlayer'));
+		var players = newPlayers.map(el => el.getElementsByClassName('input-newPlayerName')[0].value);	
+		var draftdata = testDraftData();
+		draftdata.players = players
+		initNewDraft(draftdata);
+	}
+	
+	this.toHtml = function()
+	{
+		var html = '<div id="view-newDraft">';
+		
+		html += '</div>';
+		
+		html += '<div class="footer-newDraft">';
+		html += '<button type="button" id="btn-addPlayer">Add Player</button>';
+		html += '<button type="button" id="btn-StartDraft">Start Draft</button>';
+		html += '</div>';
+		
+		return html;
+	}
+	
+	this.onViewAdded = function()
+	{
+		playersContainer = document.getElementById('view-newDraft');
+		document.getElementById('btn-addPlayer').onclick = onAddPlayerClick;
+		document.getElementById('btn-StartDraft').onclick = onStartDraftClick;
+	}
 	
 	return this;
 }
@@ -572,11 +619,19 @@ var testDraftData = function(){return{
 }};
 </script>
 <script>
+
 function showLoginView()
 {
 	var login = new LoginView();
 	document.getElementById('view-draft').innerHTML = login.toHtml();
 	login.onViewAdded();		
+}
+
+function showNewDraftView()
+{
+	var newDraftView = new NewDraftView();
+	document.getElementById('view-draft').innerHTML = newDraftView.toHtml();
+	newDraftView.onViewAdded();
 }
 
 function onInitialised()
@@ -602,16 +657,21 @@ function loadDraftOrCreateNew()
 		if (doc.exists) {
 			draft.visualizeDraftData(doc.data());
 		} else {
-			createNewDraft();
+			showNewDraftView();
 		}
 	}).catch(function(error) {
-		createNewDraft();
+		showNewDraftView();
 	});
 }
 
-function createNewDraft()
+function initNewDraft(newDraftData)
 {
-	database.newDraft(testDraftData());
+	database.newDraft(newDraftData)
+	.then(function() {
+		draft.visualizeDraftData(newDraftData);	
+	}).catch(function(error) {
+		console.log(error);
+	});;
 }
 
 
