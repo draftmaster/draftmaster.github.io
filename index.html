@@ -147,6 +147,34 @@ function DB()
 	// private
 	var fb = undefined;
 	
+	this.createNewUser = function(email, pw)
+	{
+		console.log("new user: " + email + " - " + pw);
+		
+		firebase.auth().createUserWithEmailAndPassword(email, pw).catch(function(error) {
+			// Handle Errors here.
+			var errorCode = error.code;
+			var errorMessage = error.message;
+			console.log(error);
+		});
+	}
+	
+	this.loginAsUser = function(email, pw){
+		firebase.auth().signInWithEmailAndPassword(email, pw).then(function(){
+			DOC_DRAFT = firebase.auth().currentUser.uid;
+			onSignedIn();
+		}).catch(function(error) {
+			// Handle Errors here.
+			var errorCode = error.code;
+			var errorMessage = error.message;
+			console.log(error);
+		});
+	}
+	
+	this.getCurrentUser = function() {
+		
+	}
+	
 	this.loadDraftData = function()
 	{
 		fb.collection(COL_DRAFTS).doc(DOC_DRAFT).get().then(function(doc) {
@@ -164,9 +192,9 @@ function DB()
 	{
 		fb.collection(COL_DRAFTS).doc(DOC_DRAFT).set(data)
 		.then(function() {
-			// TODO
+			console.log("created");
 		}).catch(function(error) {
-			// TODO
+			console.log(error);
 		});
 		
 		draft.visualizeDraftData(data);
@@ -207,6 +235,39 @@ function DB()
 database = DB();
 </script>
 <script>
+function LoginView()
+{
+	var inputEmail = undefined;
+	var inputPassword = undefined;
+	
+	this.toHtml = function()
+	{
+		var html = '<div>';
+		html += '<input id="input-login-email" type="text" placeholder="email" >';
+		html += '<input id="input-login-password" type="password" placeholder="password">';
+		html += '<button type="button" id="btn-signIn">Sign In</button>';
+		html += '<button type="button" id="btn-signUp">Sign Up</button>';
+		return html;
+	}
+	
+	this.onViewAdded = function()
+	{
+		inputEmail = document.getElementById('input-login-email');
+		inputPassword = document.getElementById('input-login-password');
+		
+		document.getElementById('btn-signIn').onclick = function() { 
+			database.loginAsUser(inputEmail.value, inputPassword.value);
+		};
+		
+		document.getElementById('btn-signUp').onclick = function() { 
+			database.createNewUser(inputEmail.value, inputPassword.value);
+		};
+	}
+	
+	return this;
+}
+
+
 function DraftHeader(_data)
 {
 	var data = _data;
@@ -611,7 +672,15 @@ function createNewDraft()
 	database.newDraft(testDraftData());
 }
 
-draft = new DraftView();
-database.loadDraftData();
+function onSignedIn()
+{
+	draft = new DraftView();
+	database.loadDraftData();	
+}
+
+var login = new LoginView();
+document.getElementById('view-draft').innerHTML = login.toHtml();
+login.onViewAdded();
+
 </script>
 </body>
