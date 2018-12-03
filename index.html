@@ -41,130 +41,24 @@
 	
 	<script src="https://www.gstatic.com/firebasejs/5.5.9/firebase.js"></script>
 <script>
-
-/*
-Database handles data updates
-*/
-function MatchData(data)
-{
-	var DELIMITER = ',';
-	
-	this.indexPlayer1 = -1;
-	this.indexPlayer2 = -1;
-	this.indexWinner = -1;
-	
-	this.serialize = function()
-	{
-		return this.indexPlayer1 + DELIMITER + this.indexPlayer2 + DELIMITER + this.indexWinner;
-	}
-	
-	this.fromSerializedString = function(str)
-	{
-		var splits = str.split(DELIMITER);
-		this.indexPlayer1 = splits[0];
-		this.indexPlayer2 = splits[1];
-		this.indexWinner = splits[2];
-	}
-	
-	this.print = function()
-	{
-		console.log(this.serialize());
-	}
-	
-	// constructor
-	if (data != undefined)
-	{
-		this.fromSerializedString(data);
-	}
-	return this;
-}
-
-function RoundData(data)
-{
-	var DELIMITER = '|';
-	
-	this.matches = []; // type MatchData
-	
-	this.serialize = function()
-	{
-		var str = "";
-		this.matches.forEach(function(el){
-			str += el.serialize() + DELIMITER;
-		});
-		return str;
-	}
-	
-	this.fromSerializedString = function(str)
-	{
-		var splits = str.split(DELIMITER);
-		for(var i = 0; i < splits.length; i++)
-		{
-			this.matches.push(new MatchData(splits[i]));
-		}
-	}
-	
-	this.print = function()
-	{
-		console.log(this.serialize());
-	}
-	
-	// constructor
-	if (data != undefined)
-	{
-		this.fromSerializedString(data);
-	}
-	return this;
-}
-
-function DraftData()
-{
-	this.players = [];
-	this.rounds = []; // RoundData
-	
-	this.serialize = function()
-	{
-		var str = '';
-		for(var i = 0; i < this.rounds.length; i++)
-		{
-			str += 'round' + i + '#' + this.rounds[i].serialize();
-		}
-		return str;
-	}
-	
-	this.fromSerializedString = function(str)
-	{
-		
-	}
- 	
-	return this;
-}
-
 function DB()
 {
-	var COL_DRAFTS = "drafts";
-	var DOC_DRAFT = "1";
+	var COL_DRAFTS = "drafts"; // name of active draft collection
+	var DOC_DRAFT = undefined;
 	
-	// private
-	var fb = undefined;
+	// firestore 
+	var fb = undefined; 
 	
-	this.createNewUser = function(email, pw)
-	{
-		console.log("new user: " + email + " - " + pw);
-		
-		firebase.auth().createUserWithEmailAndPassword(email, pw).catch(function(error) {
-			// Handle Errors here.
-			var errorCode = error.code;
-			var errorMessage = error.message;
-			console.log(error);
-		});
+	this.createNewUser = function(email, pw, onSuccess, onError)
+	{	
+		return firebase.auth().createUserWithEmailAndPassword(email, pw);
 	}
 	
 	this.loginAsUser = function(email, pw){
-		firebase.auth().signInWithEmailAndPassword(email, pw).then(function(){
-			DOC_DRAFT = firebase.auth().currentUser.uid;
+		firebase.auth().signInWithEmailAndPassword(email, pw)
+		.then(function(){
 			onSignedIn();
 		}).catch(function(error) {
-			// Handle Errors here.
 			var errorCode = error.code;
 			var errorMessage = error.message;
 			console.log(error);
@@ -172,11 +66,12 @@ function DB()
 	}
 	
 	this.getCurrentUser = function() {
-		
+		return firebase.auth().currentUser;
 	}
 	
 	this.loadDraftData = function()
 	{
+		DOC_DRAFT = firebase.auth().currentUser.uid;
 		fb.collection(COL_DRAFTS).doc(DOC_DRAFT).get().then(function(doc) {
 			if (doc.exists) {
 				draft.visualizeDraftData(doc.data());
@@ -190,14 +85,13 @@ function DB()
 	
 	this.newDraft = function(data)
 	{
+		DOC_DRAFT = firebase.auth().currentUser.uid;
 		fb.collection(COL_DRAFTS).doc(DOC_DRAFT).set(data)
 		.then(function() {
-			console.log("created");
+			draft.visualizeDraftData(data);	
 		}).catch(function(error) {
 			console.log(error);
 		});
-		
-		draft.visualizeDraftData(data);
 	}
 	
 	this.updateDraft = function(data)
@@ -239,14 +133,39 @@ function LoginView()
 {
 	var inputUsername = undefined;
 	var inputPassword = undefined;
+	var viewStatus = undefined;
+	
+	var usernameToEmail = '@doesnotexist.com';
+	
+	var onLogInClick = function()
+	{
+		viewStatus.innerHTML = 'logging in ...';
+		database.loginAsUser(inputUsername.value + usernameToEmail, inputPassword.value)
+		.then(onSignedIn)
+		.catch(onError);
+	}
+	
+	var onSingUpClick = function()
+	{
+		viewStatus.innerHTML = 'signing up ...';
+		database.createNewUser(inputUsername.value + usernameToEmail, inputPassword.value)
+		.then(onSignedIn)
+		.catch(onError);
+	}
+	
+	var onError = function(error)
+	{
+		viewStatus.innerHTML = 'ERROR: ' + error.message;
+	}	
 	
 	this.toHtml = function()
 	{
 		var html = '<div>';
 		html += '<input id="input-login-username" type="text" placeholder="username" >';
 		html += '<input id="input-login-password" type="password" placeholder="password">';
-		html += '<button type="button" id="btn-signIn">Sign In</button>';
+		html += '<button type="button" id="btn-logIn">Log In</button>';
 		html += '<button type="button" id="btn-signUp">Sign Up</button>';
+		html += '<p id="login-status"></p>';
 		return html;
 	}
 	
@@ -254,20 +173,20 @@ function LoginView()
 	{
 		inputUsername = document.getElementById('input-login-username');
 		inputPassword = document.getElementById('input-login-password');
+		viewStatus = document.getElementById('login-status');
 		
-		document.getElementById('btn-signIn').onclick = function() { 
-			database.loginAsUser(inputUsername.value + '@doesnotexist.com', inputPassword.value);
-		};
-		
-		document.getElementById('btn-signUp').onclick = function() { 
-			database.createNewUser(inputUsername.value + '@doesnotexist.com', inputPassword.value);
-		};
+		document.getElementById('btn-logIn').onclick = onLogInClick;
+		document.getElementById('btn-signUp').onclick = onSingUpClick;
 	}
 	
 	return this;
 }
 
+</script>
+<script>
 
+</script>
+<script>
 function DraftHeader(_data)
 {
 	var data = _data;
@@ -672,15 +591,26 @@ function createNewDraft()
 	database.newDraft(testDraftData());
 }
 
+function onDatabaseInitialised()
+{
+	var user = database.getCurrentUser();
+	if (user == undefined)
+	{
+		var login = new LoginView();
+		document.getElementById('view-draft').innerHTML = login.toHtml();
+		login.onViewAdded();			
+	}
+	else {
+		onSignedIn();
+	}
+}
+
 function onSignedIn()
 {
 	draft = new DraftView();
 	database.loadDraftData();	
 }
 
-var login = new LoginView();
-document.getElementById('view-draft').innerHTML = login.toHtml();
-login.onViewAdded();
-
+setTimeout(onDatabaseInitialised, 2000);
 </script>
 </body>
