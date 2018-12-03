@@ -237,13 +237,13 @@ database = DB();
 <script>
 function LoginView()
 {
-	var inputEmail = undefined;
+	var inputUsername = undefined;
 	var inputPassword = undefined;
 	
 	this.toHtml = function()
 	{
 		var html = '<div>';
-		html += '<input id="input-login-email" type="text" placeholder="email" >';
+		html += '<input id="input-login-username" type="text" placeholder="username" >';
 		html += '<input id="input-login-password" type="password" placeholder="password">';
 		html += '<button type="button" id="btn-signIn">Sign In</button>';
 		html += '<button type="button" id="btn-signUp">Sign Up</button>';
@@ -252,15 +252,15 @@ function LoginView()
 	
 	this.onViewAdded = function()
 	{
-		inputEmail = document.getElementById('input-login-email');
+		inputUsername = document.getElementById('input-login-username');
 		inputPassword = document.getElementById('input-login-password');
 		
 		document.getElementById('btn-signIn').onclick = function() { 
-			database.loginAsUser(inputEmail.value, inputPassword.value);
+			database.loginAsUser(inputUsername.value + '@doesnotexist.com', inputPassword.value);
 		};
 		
 		document.getElementById('btn-signUp').onclick = function() { 
-			database.createNewUser(inputEmail.value, inputPassword.value);
+			database.createNewUser(inputUsername.value + '@doesnotexist.com', inputPassword.value);
 		};
 	}
 	
