@@ -38,7 +38,7 @@
 	
 	
 	<div id="view-draft"></div>
-	<div id="view-score"></div>
+	<div id="view-scoreboard"></div>
 	
 	<script src="https://www.gstatic.com/firebasejs/5.5.9/firebase.js"></script>
 <script>
@@ -568,6 +568,8 @@ function DraftView(_data)
 	var view = undefined; // draft view
 	var viewRounds = [];
 	
+	var onDraftViewChangeListeners = [];
+	
 	var onBtnRoundComplete = function()
 	{
 		nextRound(draftdata);
@@ -599,6 +601,20 @@ function DraftView(_data)
 		if (draftdata.currentRoundId < draftdata.rounds.length) {
 			this.viewRounds[draftdata.currentRoundId].setOnBtnComplete(function(){onBtnRoundComplete();});
 		}
+		
+		onDraftDataChange();
+	}
+	
+	this.addOnDraftViewChangeListener = function(listener)
+	{
+		onDraftViewChangeListeners.push(listener);
+	}
+	
+	var onDraftDataChange = function()
+	{
+		onDraftViewChangeListeners.forEach(function(listener){
+			listener(draftdata);
+		});
 	}
 	
 	this.onClickNewDraft = function()
@@ -629,9 +645,16 @@ function DraftView(_data)
 function ScoreboardView()
 {
 	
-	this.toHtml = function()
+	this.toHtml = function(draftdata)
 	{
+		var results = getIntermediateResults(draftdata);
+		
 		var html = '';
+		for(var i = 0; i < results.length; i++)
+		{
+			html += '<p>' + (i+1) + ': ' + draftdata.players[results[i].playerId] + ': ';
+			html += results[i].score[0] + ' | ' + results[i].score[1] + ' | ' + results[i].score[2] + '</p>';
+		}
 		
 		return html;
 	}
@@ -652,6 +675,9 @@ function Main()
 	Main.newDraftView = new NewDraftView();
 	Main.draftView = new DraftView();
 	Main.scoreboardView = new ScoreboardView();
+	
+	Main.draftView.addOnDraftViewChangeListener(onDraftDataChange);
+	
 	setTimeout(onInitialised, 1000);
 }
 
@@ -665,6 +691,12 @@ function showNewDraftView()
 {
 	document.getElementById('view-draft').innerHTML = Main.newDraftView.toHtml();
 	Main.newDraftView.onViewAdded();
+}
+
+function showScoreboard()
+{
+	document.getElementById('view-scoreboard').innerHTML = Main.scoreboardView.toHtml();
+	Main.scoreboardView.onViewAdded();
 }
 
 function onInitialised()
@@ -693,6 +725,12 @@ function loadDraftOrCreateNew()
 	}).catch(function(error) {
 		showNewDraftView();
 	});
+}
+
+
+function onDraftDataChange(draftdata)
+{
+	document.getElementById('view-scoreboard').innerHTML = Main.scoreboardView.toHtml(draftdata);
 }
 
 function deleteCurrentDraft()
