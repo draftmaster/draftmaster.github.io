@@ -6,24 +6,64 @@
 		padding: 0;
 		width: 100%;
 		height: 100%;
+		background-color: #f9f9f9;
 	}
 
 	div#view-login {	
-		 position: relative;
-		 top: 25%;
-		 left: 40%;
+		position: relative;
+		padding: 20px;
+		max-width: 20%;
+		top: 15%;	
+		left: 35%;
+		
+		border-radius: 5px;
+		border: 1px solid #d8dee2;
+		border-top: 1px solid #d8dee2;
+		
+		background-color: #fff;
 	}
 	
 	#view-login input {
-		margin: 5 0;
 		width: 100%;
-		height: 10%;
-		font-size: 150%;
+		min-height: 34px;
+		margin: 5 0;
+		
+		border: 1px solid #d1d5da;
+		border-radius: 3px;
+		box-shadow: inset 0 1px 2px rgba(27,31,35,.075);
 	}
 	
 	#view-login button {
-		width: 50%;
-		height: 10%;
+		width: 100%;
+		margin: 5 0;
+		line-height: 20px;
+		padding: 6px 12px;
+		
+		font-size: 14px;
+		font-weight: 600;
+		vertical-align: middle;
+		
+		color: #fff;
+		background-image: linear-gradient(-180deg,#ffc151,#fda300 90%);
+		background-position: -.5em;
+		
+		border-color: rgba(27,31,35,.5);
+		border: 1px solid rgba(27,31,35,.2);
+		border-radius: .25em;
+	}
+	
+	#view-login p {
+		display: none;
+		margin: 5 0;
+		margin-bottom: -10px;
+		padding: 6px 12px;
+		
+		font-size: 14px;
+		font-weight: 600;
+		color: #ffffff;
+		background-color: #ff0000;
+		
+		border-radius: .25em;
 	}
 
 	div#view-draft {
@@ -57,8 +97,6 @@
 	<div id="header">
 		<button type="button" id="btn-newDraft">New Draft</button> 
 	</div>
-	
-	<p id="debug"></p>
 	
 	<div id="view-login"></div>
 	<div id="view-draft"></div>
@@ -178,7 +216,7 @@ function LoginView()
 		.catch(onError);
 	}
 	
-	var onSingUpClick = function()
+	var onSignUpClick = function()
 	{
 		viewStatus.innerHTML = 'signing up ...';
 		Main.database.createNewUser(inputUsername.value + usernameToEmail, inputPassword.value)
@@ -186,16 +224,23 @@ function LoginView()
 		.catch(onError);
 	}
 	
+	this.onResize = function()
+	{
+		var w = window.innerWidth;
+		var h = window.innerHeight;
+	}
+	
 	var onError = function(error)
 	{
+		viewStatus.style.display = 'block';
 		viewStatus.innerHTML = 'ERROR: ' + error.message;
 	}	
 	
 	this.toHtml = function()
 	{
 		var html = '<div>';
-		html += '<div><input id="input-login-username" type="text" placeholder="username" ></div>';
-		html += '<div><input id="input-login-password" type="password" placeholder="password"></div>';
+		html += '<input id="input-login-username" type="text" placeholder="username">';
+		html += '<input id="input-login-password" type="password" placeholder="password">';
 		html += '</div>';
 		
 		html += '<div><button type="button" id="btn-logIn">Log In</button>';
@@ -211,7 +256,7 @@ function LoginView()
 		viewStatus = document.getElementById('login-status');
 		
 		document.getElementById('btn-logIn').onclick = onLogInClick;
-		document.getElementById('btn-signUp').onclick = onSingUpClick;
+		document.getElementById('btn-signUp').onclick = onSignUpClick;
 	}
 	
 	return this;
@@ -714,7 +759,6 @@ function Main()
 	Main.draftView.addOnDraftViewChangeListener(onDraftDataChange);
 	
 	window.onresize = onScreenResize;
-	onScreenResize();
 	
 	setTimeout(onInitialised, 1000);
 }
