@@ -41,13 +41,26 @@
 	
 	<script src="https://www.gstatic.com/firebasejs/5.5.9/firebase.js"></script>
 <script>
+Array.prototype.shuffle = function () {
+    var input = this;
+ 
+    for (var i = input.length - 1; i >= 0; i--) {
+ 
+        var randomIndex = Math.floor(Math.random() * (i + 1));
+        var itemAtIndex = input[randomIndex];
+ 
+        input[randomIndex] = input[i];
+        input[i] = itemAtIndex;
+    }
+    return input;
+}
+</script>
+<script>
 function DB()
 {
-	var COL_DRAFTS = "drafts"; // name of active draft collection
-	var DOC_DRAFT = undefined;
-	
-	// firestore 
-	var fb = undefined; 
+	/* 
+			AUTH
+	*/
 	
 	this.createNewUser = function(email, pw, onSuccess, onError)
 	{	
@@ -62,11 +75,15 @@ function DB()
 		return firebase.auth().currentUser;
 	}
 	
-	this.loadDraftData = function()
-	{
-		DOC_DRAFT = firebase.auth().currentUser.uid;
-		return fb.collection(COL_DRAFTS).doc(DOC_DRAFT).get();
-	}
+	/* 
+			FIRESTORE
+	*/
+	
+	var COL_DRAFTS = "drafts"; // name of active draft collection
+	var DOC_DRAFT = undefined;
+	
+	// firestore 
+	var fb = undefined; 
 	
 	this.newDraft = function(data)
 	{
@@ -74,14 +91,27 @@ function DB()
 		return fb.collection(COL_DRAFTS).doc(DOC_DRAFT).set(data);
 	}
 	
-	this.updateDraft = function(data)
+	this.loadDraftData = function()
 	{
-		fb.collection(COL_DRAFTS).doc(DOC_DRAFT).update(data);
+		DOC_DRAFT = firebase.auth().currentUser.uid;
+		return fb.collection(COL_DRAFTS).doc(DOC_DRAFT).get();
 	}
 	
+	this.deleteDraft = function()
+	{
+		DOC_DRAFT = firebase.auth().currentUser.uid;
+		return fb.collection(COL_DRAFTS).doc(DOC_DRAFT).delete();
+	}
+	
+	this.updateDraft = function(data)
+	{
+		DOC_DRAFT = firebase.auth().currentUser.uid;
+		return fb.collection(COL_DRAFTS).doc(DOC_DRAFT).update(data);
+	}
+	
+	// Initialize Firebase
 	this.init = function()
 	{
-		// Initialize Firebase
 		var config = {
 			apiKey: "AIzaSyBhhBAzfvWRvYUZRg2RuXriQ67SPBkiWOg",
 			authDomain: "draftmaster-1c8d9.firebaseapp.com",
@@ -166,6 +196,82 @@ function LoginView()
 
 </script>
 <script>
+/*
+	
+		DRAFT - DATA
+
+*/
+
+function MatchData()
+{
+	MatchData.matchIdCounter++;
+	return {
+		id: MatchData.matchIdCounter,
+		player1: -1,
+		player2: -1,
+		result: ''
+	}
+}
+MatchData.matchIdCounter = 0;
+
+function RoundData()
+{
+	RoundData.roundIdCounter++;
+	return {
+		id: RoundData.roundIdCounter,
+		matches: []
+	}
+}
+RoundData.roundIdCounter = 0;
+
+function DraftData(players)
+{
+	// shuffle players to have random start pairings
+	players.shuffle();
+	
+	// add wildcard player if uneven amount of players
+	if (players.length % 2 == 1)
+	{
+		players.push(DraftData.PLAYER_WILDCARD);
+	}
+	
+	// init data
+	var data = {
+		players: players,
+		currentRoundId: 0,
+		rounds: []
+	}
+	
+	// add empty rounds
+	var maxNumRounds = Math.ceil(Math.log2(players.length));
+	for(var r = 0; r < maxNumRounds; r++)
+	{
+		data.rounds.push(new RoundData());
+		for(var m = 0; m < players.length / 2; m++)
+		{
+			data.rounds[r].matches.push(new MatchData());
+		}
+	}
+	
+	// decide pairings first round
+	for(var p = 0; p < players.length; p+=2)
+	{
+		data.rounds[0].matches[p/2].player1 = p;
+		data.rounds[0].matches[p/2].player2 = p+1;
+	}
+	
+	return data;
+}
+
+DraftData.PLAYER_WILDCARD = 'WILDCARD';
+
+
+/*
+	
+		DRAFT - VIEWS
+
+*/
+
 function NewDraftView()
 {
 	var playersContainer = undefined;
@@ -197,8 +303,7 @@ function NewDraftView()
 	{
 		var newPlayers = Array.from(playersContainer.getElementsByClassName('view-newPlayer'));
 		var players = newPlayers.map(el => el.getElementsByClassName('input-newPlayerName')[0].value);	
-		var draftdata = testDraftData();
-		draftdata.players = players
+		var draftdata = new DraftData(players);
 		initNewDraft(draftdata);
 	}
 	
@@ -502,7 +607,9 @@ function DraftView(_data)
 	
 	this.onClickNewDraft = function()
 	{
-		database.newDraft(testDraftData());
+		database.deleteDraft().then(function(){
+			loadDraftOrCreateNew();
+		});
 	}
 	
 	this.visualizeDraftData = function(data)
@@ -523,100 +630,6 @@ function DraftView(_data)
 	this.init();
 	return this;
 }
-
-var testDraftData = function(){return{
-	players: ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"],
-	currentRoundId: 0,
-	rounds: [
-		{
-			id: 0,
-			matches: [
-				{
-					id: 0,
-					player1: 0,
-					player2: 1,
-					result: ''
-				},
-				{
-					id: 1,
-					player1: 2,
-					player2: 3,
-					result: ''
-				},
-				{
-					id: 2,
-					player1: 4,
-					player2: 5,
-					result: ''
-				},
-				{
-					id: 3,
-					player1: 6,
-					player2: 7,
-					result: ''
-				}
-			]
-		},
-		{
-			id: 1,
-			matches: [
-				{
-					id: 4,
-					player1: -1,
-					player2: -1,
-					result: ''
-				},
-				{
-					id: 5,
-					player1: -1,
-					player2: -1,
-					result: ''
-				},
-				{
-					id: 6,
-					player1: -1,
-					player2: -1,
-					result: ''
-				},
-				{
-					id: 7,
-					player1: -1,
-					player2: -1,
-					result: ''
-				}
-			]
-		},
-		{
-			id: 2,
-			matches: [
-				{
-					id: 8,
-					player1: -1,
-					player2: -1,
-					result: ''
-				},
-				{
-					id: 9,
-					player1: -1,
-					player2: -1,
-					result: ''
-				},
-				{
-					id: 10,
-					player1: -1,
-					player2: -1,
-					result: ''
-				},
-				{
-					id: 11,
-					player1: -1,
-					player2: -1,
-					result: ''
-				}
-			]
-		}
-	]
-}};
 </script>
 <script>
 
@@ -671,9 +684,8 @@ function initNewDraft(newDraftData)
 		draft.visualizeDraftData(newDraftData);	
 	}).catch(function(error) {
 		console.log(error);
-	});;
+	});
 }
-
 
 setTimeout(onInitialised, 1000);
 </script>
