@@ -12,8 +12,6 @@
 	div#view-login {
 		position: relative;
 		padding: 20px;
-		min-width: 20%;
-		max-width: 400px;
 		top: 15%;	
 		margin: auto;
 		
@@ -26,7 +24,7 @@
 	
 	#view-login input {
 		width: 100%;
-		min-height: 34px;
+		min-height: 38px;
 		margin: 5 0;
 		
 		border: 1px solid #d1d5da;
@@ -236,6 +234,17 @@ function LoginView()
 		updateStatus(error.message, '#ff0000');
 	}	
 	
+	this.onResize = function()
+	{
+		var container = document.getElementById('view-login');
+		
+		if (isMobileDevice()) {
+			container.style.width = '80%';	
+		} else {
+			container.style.width = '25%';
+		}
+	}
+	
 	this.toHtml = function()
 	{
 		var html = '<div>';
@@ -257,6 +266,7 @@ function LoginView()
 		
 		document.getElementById('btn-logIn').onclick = onLogInClick;
 		document.getElementById('btn-signUp').onclick = onSignUpClick;
+		this.onResize();
 	}
 	
 	return this;
@@ -763,9 +773,13 @@ function Main()
 	setTimeout(onInitialised, 1000);
 }
 
+function isMobileDevice() {
+    return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+};
+
 function onScreenResize(event)
 {
-	document.getElementById('debug').innerHTML = window.innerWidth + "x" + window.innerHeight;
+	Main.loginView.onResize();
 }
 
 function showLoginView()
