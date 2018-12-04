@@ -1,10 +1,24 @@
 <meta charset="UTF-8"> 
 <head>
 <style>
+	body {
+		padding: 5px;	
+	}
+
+	div#view-login {	
+		 position: relative;
+		 top: 35%;
+		 left: 35%;
+	}
+	
+	#view-login input {
+		margin: 5 0;
+		width: 100%;
+		height: 10%;
+		font-size: 150%;
+	}
+
 	div#view-draft {
-		border-width: 5px;
-		border-style: solid;
-		border-color: pink;
 	}
 
 	div.view-round {
@@ -37,6 +51,7 @@
 	</div>
 	
 	
+	<div id="view-login"></div>
 	<div id="view-draft"></div>
 	<div id="view-scoreboard"></div>
 	
@@ -170,11 +185,13 @@ function LoginView()
 	this.toHtml = function()
 	{
 		var html = '<div>';
-		html += '<input id="input-login-username" type="text" placeholder="username" >';
-		html += '<input id="input-login-password" type="password" placeholder="password">';
-		html += '<button type="button" id="btn-logIn">Log In</button>';
+		html += '<div><input id="input-login-username" type="text" placeholder="username" ></div>';
+		html += '<div><input id="input-login-password" type="password" placeholder="password"></div>';
+		html += '</div>';
+		
+		html += '<div><button type="button" id="btn-logIn">Log In</button>';
 		html += '<button type="button" id="btn-signUp">Sign Up</button>';
-		html += '<p id="login-status"></p>';
+		html += '<p id="login-status"></p></div>';
 		return html;
 	}
 	
@@ -692,8 +709,15 @@ function Main()
 
 function showLoginView()
 {
-	document.getElementById('view-draft').innerHTML = Main.loginView.toHtml();
+	var container = document.getElementById('view-login');
+	container.innerHTML = Main.loginView.toHtml();
+	container.style.display = 'inline-block';
 	Main.loginView.onViewAdded();		
+}
+
+function hideLoginView()
+{
+	document.getElementById('view-login').style.display = 'none';
 }
 
 function showNewDraftView()
@@ -720,6 +744,7 @@ function onInitialised()
 
 function onSignedIn()
 {
+	hideLoginView();
 	loadDraftOrCreateNew();
 }
 
