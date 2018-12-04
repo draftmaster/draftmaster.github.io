@@ -61,7 +61,6 @@
 		font-size: 14px;
 		font-weight: 600;
 		color: #ffffff;
-		background-color: #ff0000;
 		
 		border-radius: .25em;
 	}
@@ -210,7 +209,7 @@ function LoginView()
 	
 	var onLogInClick = function()
 	{
-		viewStatus.innerHTML = 'logging in ...';
+		updateStatus('logging in ...', '#707070');
 		Main.database.loginAsUser(inputUsername.value + usernameToEmail, inputPassword.value)
 		.then(onSignedIn)
 		.catch(onError);
@@ -218,22 +217,22 @@ function LoginView()
 	
 	var onSignUpClick = function()
 	{
-		viewStatus.innerHTML = 'signing up ...';
+		updateStatus('signing up ...', '#707070');
 		Main.database.createNewUser(inputUsername.value + usernameToEmail, inputPassword.value)
 		.then(onSignedIn)
 		.catch(onError);
 	}
 	
-	this.onResize = function()
+	var updateStatus = function(msg, color)
 	{
-		var w = window.innerWidth;
-		var h = window.innerHeight;
+		viewStatus.innerHTML = msg;
+		viewStatus.style.display = 'block';
+		viewStatus.style.backgroundColor = color;
 	}
 	
 	var onError = function(error)
 	{
-		viewStatus.style.display = 'block';
-		viewStatus.innerHTML = 'ERROR: ' + error.message;
+		updateStatus(error.message, '#ff0000');
 	}	
 	
 	this.toHtml = function()
