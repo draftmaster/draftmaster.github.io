@@ -453,7 +453,7 @@ function NewDraftView()
 		Footer.setContent([
 			["Add Player", onAddPlayerClick],
 			["Start Draft", onStartDraftClick]
-		]);
+		], false);
 	}
 	
 	return this;
@@ -816,7 +816,7 @@ function DraftView(_data)
 			["Scores", (function(){})],
 			["Rounds", (function(){})],
 			["New Draft", onClickNewDraft]
-		]);
+		], true);
 		
 		onDraftDataChange();
 	}
