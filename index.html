@@ -5,21 +5,23 @@
 	body {	
 		margin: 0;
 		padding: 0;
-		width: 100%;
-		height: 100%;
 		background-color: #f9f9f9;
+	}
+	
+	div#content {
+		min-width: 400px;
+		height: 100%;
+		margin: auto;
 	}
 
 	div#view-login {
 		position: relative;
 		padding: 20px;
 		top: 15%;	
-		margin: auto;
 		
 		border-radius: 5px;
 		border: 1px solid #d8dee2;
 		border-top: 1px solid #d8dee2;
-		
 		background-color: #fff;
 	}
 	
@@ -27,6 +29,7 @@
 		width: 100%;
 		min-height: 38px;
 		margin: 5 0;
+		padding: 0 10;
 		
 		border: 1px solid #d1d5da;
 		border-radius: 3px;
@@ -93,13 +96,15 @@
 </head>
 <body>
 	
-	<div id="header">
-		<button type="button" id="btn-newDraft">New Draft</button> 
-	</div>
-	
-	<div id="view-login"></div>
-	<div id="view-draft"></div>
-	<div id="view-scoreboard"></div>
+	<div id="content">
+		<div id="header"></div>
+			
+		<div id="view-login"></div>
+		<div id="view-draft"></div>
+		<div id="view-scoreboard"></div>
+		
+		<div id="footer"></div>
+	<div>
 	
 	<script src="https://www.gstatic.com/firebasejs/5.5.9/firebase.js"></script>
 <script>
@@ -240,11 +245,9 @@ function LoginView()
 		var container = document.getElementById('view-login');
 		
 		if (isMobileDevice()) {
-			container.style.width = '65%';	
 			inputUsername.style.fontSize = '20px';
 			inputPassword.style.fontSize = '20px';
 		} else {
-			container.style.width = '25%';
 			inputUsername.style.fontSize = '14px';
 			inputPassword.style.fontSize = '14px';
 		}
@@ -718,7 +721,7 @@ function DraftView(_data)
 	
 	this.init = function()
 	{
-		document.getElementById("btn-newDraft").onclick = this.onClickNewDraft;
+		//document.getElementById("btn-newDraft").onclick = this.onClickNewDraft;
 		
 		if (draftdata != undefined)
 		{			
@@ -772,8 +775,10 @@ function Main()
 	Main.scoreboardView = new ScoreboardView();
 	
 	Main.draftView.addOnDraftViewChangeListener(onDraftDataChange);
-	
 	window.onresize = onScreenResize;
+	
+	showLoginView();
+	onScreenResize();
 	
 	setTimeout(onInitialised, 1000);
 }
@@ -784,6 +789,13 @@ function isMobileDevice() {
 
 function onScreenResize(event)
 {
+	var content = document.getElementById('content');
+	if (isMobileDevice()) {
+		content.style.width = '100%';
+	} else {
+		content.style.width = '30%';
+	}
+	
 	Main.loginView.onResize();
 }
 
@@ -815,9 +827,7 @@ function showScoreboard()
 function onInitialised()
 {
 	var user = Main.database.getCurrentUser();
-	if (user == undefined) {	
-		showLoginView();
-	} else {
+	if (user != undefined) {	
 		onSignedIn();
 	}
 }
