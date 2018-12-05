@@ -257,14 +257,10 @@ function LoginView()
 	this.onResize = function()
 	{
 		var container = document.getElementById('view-login');
+		var fontSize = isMobileDevice() ? '20px' : '14px';
 		
-		if (isMobileDevice()) {
-			inputUsername.style.fontSize = '20px';
-			inputPassword.style.fontSize = '20px';
-		} else {
-			inputUsername.style.fontSize = '14px';
-			inputPassword.style.fontSize = '14px';
-		}
+		inputUsername.style.fontSize = fontSize;
+		inputPassword.style.fontSize = fontSize;
 	}
 	
 	this.toHtml = function()
@@ -805,7 +801,7 @@ function onScreenResize(event)
 {
 	var content = document.getElementById('content');
 	if (isMobileDevice()) {
-		content.style.width = '100%';
+		content.style.width = '90%';
 	} else {
 		content.style.width = '30%';
 	}
