@@ -338,25 +338,58 @@ function NewDraftView()
 	
 	var onAddPlayerClick = function()
 	{
-		// add new player div
-		var html = '<div class="view-newPlayer">';
-		html += '<input class="input-newPlayerName" type="text" placeholder="Name">';
-		html += '<button type="button" class="btn-removeNewPlayer">Remove</button>';
-		playersContainer.innerHTML += html + '</div>';
+		NewDraftView.inputIdCounter++;
 		
-		// configure UI
-		var newPlayers = playersContainer.getElementsByClassName('view-newPlayer');
-		for(var i = 0; i < newPlayers.length; i++)
-		{
-			newPlayers[i].getElementsByClassName('btn-removeNewPlayer')[0].onclick = function() {
-				onRemovePlayerClick(i);
-			}
-		}
+		// add new player div
+		var html = playersContainer.innerHTML + '<div class="view-newPlayer" id="view-newPlayer-' + NewDraftView.inputIdCounter + '">';
+		html += '<input class="input-newPlayerName" type="text" placeholder="Name">';
+		html += '<button type="button" class="btn-removeNewPlayer">X</button></div>';
+		
+		changeHtml(html);
 	}
 	
-	var onRemovePlayerClick = function(index)
+	var onRemovePlayerClick = function(id)
 	{
-		// TODO - passing index not working
+		var html = '';
+		Array.from(document.getElementsByClassName('view-newPlayer')).forEach(function(el){
+			if (el.id != id){
+				html += el.outerHTML;
+			}
+		});
+		changeHtml(html);
+	}
+	
+	var changeHtml = function(html) 
+	{
+		// store data before applying html
+		var ids = [];
+		var names = [];
+		Array.from(document.getElementsByClassName('view-newPlayer')).forEach(function(el){
+			ids.push(el.id);
+			names.push(el.getElementsByClassName('input-newPlayerName')[0].value);
+		});
+	
+		// apply new html
+		playersContainer.innerHTML = html;
+	
+		// configure UI
+		var newPlayers = Array.from(playersContainer.getElementsByClassName('view-newPlayer'));
+		for(var i = 0; i < newPlayers.length; i++)
+		{
+			(function(index) {
+				// set previous name
+				var dataIndex = ids.indexOf(newPlayers[index].id);
+				if (dataIndex != -1)
+				{
+					newPlayers[index].getElementsByClassName('input-newPlayerName')[0].value = names[dataIndex];
+				}
+				
+				// remove button
+				newPlayers[index].getElementsByClassName('btn-removeNewPlayer')[0].onclick = function() {
+					onRemovePlayerClick(newPlayers[index].id);
+				}
+			})(i);
+		}
 	}
 	
 	var onStartDraftClick = function()
@@ -370,13 +403,17 @@ function NewDraftView()
 	this.toHtml = function()
 	{
 		var html = '<div id="view-newDraft"></div>';
-		
 		return html;
 	}
 	
 	this.onViewAdded = function()
 	{
 		playersContainer = document.getElementById('view-newDraft');
+		
+		for(var i = 0; i < 8; i++) {
+			onAddPlayerClick();
+		}
+		
 		Footer.setContent([
 			["Add Player", onAddPlayerClick],
 			["Start Draft", onStartDraftClick]
@@ -385,6 +422,8 @@ function NewDraftView()
 	
 	return this;
 }
+
+NewDraftView.inputIdCounter = -1;
 
 </script>
 <script>
