@@ -21,6 +21,7 @@
 	
 	div#header {
 		position: absolute;
+		min-width: 400px;
 		top: 0;
 		color: #fff;
 		background-image: linear-gradient(-180deg,#ffc151,#fda300 90%);
@@ -36,6 +37,7 @@
 	
 	div#footer {
 		position: absolute;
+		min-width: 400px;
 		bottom: 0;
 		color: #fff;
 		background-color: #fda300;
@@ -117,15 +119,47 @@
 	}
 	
 	
+	
+	/*			NEW DRAFT		*/
+	
+	div#view-newDraft {
+		position: relative;
+		top: 20px;	
+	}
+	
+	#view-newDraft input {
+		width: 60%;
+		min-height: 38px;
+		margin: 5 10;
+		padding: 0 10;
+		
+		border: 1px solid #d1d5da;
+		border-radius: 3px;
+		box-shadow: inset 0 1px 2px rgba(27,31,35,.075);
+	}
+	
+	
+	#view-newDraft button {
+		float: right;
+		min-height: 38px;
+		font-size: 2 em;
+		text-align: center;
+		margin: 5 10;
+		padding: 0 15;
+	
+		color: #fda300;
+		background-color: #0000;
+		
+		border-radius: 5px;
+		border: 1px solid #fda300;
+	}
+	
 	/*			DRAFT			*/
 
 	div#view-draft {
 	}
 
 	div.view-round {
-		border-width: 5px;
-		border-style: solid;
-		border-color: orange;
 	}
 	
 	div.view-match {
@@ -776,6 +810,12 @@ function DraftView(_data)
 			this.viewRounds[draftdata.currentRoundId].setOnBtnComplete(function(){onBtnRoundComplete();});
 		}
 		
+		Footer.setContent([
+			["Scores", (function(){})],
+			["Rounds", (function(){})],
+			["New Draft", onClickNewDraft]
+		]);
+		
 		onDraftDataChange();
 	}
 	
@@ -791,7 +831,7 @@ function DraftView(_data)
 		});
 	}
 	
-	this.onClickNewDraft = function()
+	var onClickNewDraft = function()
 	{
 		deleteCurrentDraft();
 	}
@@ -921,19 +961,18 @@ function onScreenResize(event)
 {
 	var w = isMobileDevice() ? '90%' : '30%';
 	
-	var header = document.getElementById('header');
-	var footer = document.getElementById('footer');
-	var content = document.getElementById('content');
-	
-	[header, footer, content].forEach(function(el) {
-		el.style.width = w;
+	// set document width
+	['header', 'footer', 'content'].forEach(function(id) {
+		document.getElementById(id).style.width = w;
 	});
 	
-	content.style.paddingTop = header.clientHeight + "px";
-	
+	// set content height
+	var content = document.getElementById('content');
 	var contentHeight = window.innerHeight - header.clientHeight - footer.clientHeight;
 	content.style.height = contentHeight + "px";
+	content.style.paddingTop = header.clientHeight + "px";
 	
+	// resize
 	Main.loginView.onResize();
 }
 
@@ -985,11 +1024,10 @@ function loadDraftOrCreateNew()
 			showNewDraftView();
 		}
 	}).catch(function(error) {
-			console.log(error);
+		console.log(error);
 		showNewDraftView();
 	});
 }
-
 
 function onDraftDataChange(draftdata)
 {
