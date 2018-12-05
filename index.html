@@ -124,7 +124,8 @@
 	
 	div#view-newDraft {
 		position: relative;
-		top: 20px;	
+		overflow-y: auto;
+		height: inherit;
 	}
 	
 	#view-newDraft input {
@@ -157,6 +158,7 @@
 	/*			DRAFT			*/
 
 	div#view-draft {
+		height: inherit;
 	}
 
 	div.view-round {
@@ -933,6 +935,8 @@ Footer.setContent = function(content, asTabs)
 			btn.style.width = (100 / content.length) + '%';
 		})(i)
 	}
+	
+	onScreenResize();
 }
 </script>
 <script>
@@ -971,6 +975,8 @@ function onScreenResize(event)
 	var contentHeight = window.innerHeight - header.clientHeight - footer.clientHeight;
 	content.style.height = contentHeight + "px";
 	content.style.paddingTop = header.clientHeight + "px";
+	
+	console.log(window.innerHeight + " < " + contentHeight);
 	
 	// resize
 	Main.loginView.onResize();
