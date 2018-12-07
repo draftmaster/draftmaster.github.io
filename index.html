@@ -678,6 +678,12 @@ function MatchView(context, _data)
 		var html = '<div class="view-match" id="view-match-' + match.id +'">';
 		html += '<p>' + name1 + ' vs. ' + name2 + '</p>';
 		html += '<input class="input-match-result" type="text" placeholder="Result" value="' + match.result + '">';
+		html += ' <select class="input-match-result">';
+		['2:0', '2:1', '1:2', '0:2'].forEach(function(score){
+			html += '<option value="' + score + '">' + score + '</option>';
+		});
+		html += '</select>';
+		
 		html += '</div>';
 		return html;
 	}
@@ -954,7 +960,7 @@ function Main()
 	showLoginView();
 	onScreenResize();
 	
-	setTimeout(onInitialised, 2000);
+	setTimeout(onInitialised, 400);
 }
 
 function isMobileDevice() {
