@@ -36,7 +36,7 @@
 	/*			FOOTER			*/
 	
 	div#footer {
-		position: absolute;
+		position: fixed;
 		min-width: 400px;
 		bottom: 0;
 		color: #fff;
@@ -155,6 +155,11 @@
 		border: 1px solid #fda300;
 	}
 	
+	#view-newDraft button:hover {
+		color: #fff;
+		background-color: #fda300;
+	}
+	
 	/*			DRAFT			*/
 
 	div#view-draft {
@@ -162,7 +167,40 @@
 		overflow-y: auto;
 		height: inherit;
 	}
-
+	
+	.view-roundSelector {
+		border-bottom: 2px solid #fda300;
+	}
+	
+	.view-roundSelector h2 {
+		maring: 0;
+		width: 70%;
+		color: #fda300;
+		display: inline-block;
+		text-align: center;
+	}
+	
+	.view-roundSelector button {
+		display: inline-block;
+		min-height: 38px;
+		font-size: 2 em;
+		text-align: center;
+		margin: 0 2.5%;
+		padding: 0 0;
+		width: 10%;
+	
+		color: #fda300;
+		background-color: #0000;
+		
+		border-radius: 5px;
+		border: 1px solid #fda300;
+	}
+	
+	.view-roundSelector button:hover {
+		color: #fff;
+		background-color: #fda300;
+	}
+	
 	div.view-round {
 		display: none;
 	}
@@ -206,6 +244,11 @@
 		border: 1px solid #fda300;
 	}
 
+	.view-roundButton button:hover {
+		color: #fff;
+		background-color: #fda300;
+	}
+	
 	#view-scoreboard {
 		display: none;
 	}
@@ -787,8 +830,6 @@ function RoundView(context, _data)
 		// configure button onRoundComplete
 		if (context.currentRoundId == round.id) 
 		{
-			view.style.display = 'block';
-			
 			document.getElementById('btn-roundComplete').onclick = function(){
 				if (onBtnComplete != undefined)
 				{
@@ -819,6 +860,34 @@ function DraftView(_data)
 	
 	var onDraftViewChangeListeners = [];
 	
+	var currentVisibleRound = 0;
+	
+	var onBtnRoundPrevious = function()
+	{
+		if (currentVisibleRound > 0) {
+			showRound(currentVisibleRound-1);
+		}
+	}
+	
+	var onBtnRoundNext = function()
+	{
+		if (currentVisibleRound < draftdata.rounds.length -1) {
+			showRound(currentVisibleRound+1);
+		}
+	}
+	
+	var showRound = function(index)
+	{
+		currentVisibleRound = index;
+		document.getElementById('h-RoundIndex').innerHTML = 'Round ' + (1 + currentVisibleRound);
+		
+		var rounds = document.getElementsByClassName('view-round');
+		for(var i = 0; i < rounds.length; i++)
+		{
+			rounds[i].style.display = i == currentVisibleRound ? 'block' : 'none';
+		}
+	}
+	
 	var onBtnRoundComplete = function()
 	{
 		nextRound(draftdata);
@@ -832,6 +901,15 @@ function DraftView(_data)
 		this.viewRounds = [];
 
 		var html = '';
+		
+		// round selector 
+		html += '<div class="view-roundSelector">';
+		html += '<button type="button" class="btn-selectRound" id="btn-selectRoundPrevious"><</button>';
+		html += '<h2 id="h-RoundIndex">Round X</h2>';
+		html += '<button type="button" class="btn-selectRound" id="btn-selectRoundNext">></button>';
+		html += '</div>';
+		
+		// append all round views
 		for(var r = 0; r < data.rounds.length; r++)
 		{
 			var round = new RoundView(data, data.rounds[r]);
@@ -839,9 +917,10 @@ function DraftView(_data)
 			html += round.toHtml();
 		}
 		
+		// set html
 		this.view.innerHTML = html;	
 		
-		// --- send onAddedEvent
+		// --- send onAddedEvent to children
 		this.viewRounds.forEach(function(viewRound){
 			viewRound.onViewAdded();
 		});
@@ -851,6 +930,10 @@ function DraftView(_data)
 			this.viewRounds[draftdata.currentRoundId].setOnBtnComplete(function(){onBtnRoundComplete();});
 		}
 		
+		document.getElementById('btn-selectRoundPrevious').onclick = onBtnRoundPrevious;
+		document.getElementById('btn-selectRoundNext').onclick = onBtnRoundNext;
+		
+		// configure footer
 		Footer.setContent([
 			["Scores", (function(){
 				document.getElementById('view-scoreboard').style.display = 'block';
@@ -859,12 +942,14 @@ function DraftView(_data)
 			["Rounds", (function(){
 				document.getElementById('view-scoreboard').style.display = 'none';
 				document.getElementById('view-draft').style.display = 'block';
+				showRound(data.currentRoundId);
 			})],
 			["New Draft", onClickNewDraft]
 		], true);
 		
+		// configure view
 		Footer.setTabActive(1);
-		
+		showRound(data.currentRoundId);
 		onDraftDataChange();
 	}
 	
