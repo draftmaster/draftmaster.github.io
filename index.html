@@ -667,7 +667,8 @@ DraftData.PLAYER_WILDCARD = 'WILDCARD';
 // returns array [numMatchWinsPlayer1, numMatchWinsPlayer2]
 function parseMatchResult(matchData)
 {
-	var split = matchData.result.split(':');
+	var matchString = matchData.result == '' ? '0:0' : matchData.result;
+	var split = matchString.split(':');
 	return [parseInt(split[0]), parseInt(split[1])]
 }
 
