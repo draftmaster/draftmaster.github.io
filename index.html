@@ -821,8 +821,23 @@ function MatchView(context, _data)
 	
 	this.onInputChange = function()
 	{
-		match.result = input.value;
-		Main.database.updateDraft(context);
+		var roundId = -1;
+		
+		for(var i = 0; i < context.rounds.length; i++)
+		{
+			if(context.rounds[i].matches.filter(mdata => mdata.id == match.id).length > 0) {
+				roundId = i;
+			}
+		}
+		
+		// only update if current round
+		if (context.currentRoundId == roundId) {
+			match.result = input.value;
+			Main.database.updateDraft(context);
+		} else {
+			input.value = match.result != '' ? match.result : '0:0';
+		}
+		
 	}
 	
 	return this;
@@ -876,8 +891,6 @@ function RoundView(context, _data)
 		viewMatches.forEach(function(viewMatch){
 			viewMatch.onViewAdded();
 		});
-		
-		console.log(context.currentRoundId + " - " + round.id);
 		
 		// configure button onRoundComplete
 		if (context.currentRoundId == round.id) 
