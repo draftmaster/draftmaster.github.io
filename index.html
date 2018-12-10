@@ -160,6 +160,56 @@
 		background-color: #fda300;
 	}
 	
+	/*			SCOREBOARD		*/
+	
+	div#view-scoreboard {
+		overflow-y: auto;
+		height: inherit;
+	}
+	
+	.view-scoreEntry {
+		font-size: 1.25em;
+		margin: 0 5%;
+		padding: 2% 0;
+		border-bottom: 2px solid #fda300;
+	}
+	
+	.view-playerRanking {
+		display: inline-block;
+		margin: 2% 0;
+		width: 5%;
+		text-align: center;
+		
+		color: #fff;
+		background-color: #ccc;
+		border-radius: 5px;
+	}
+	
+	#view-playerRanking-1 {
+		background-color: #fda300;
+	}
+	
+	#view-playerRanking-2 {
+		background-color: #ffcb6c;
+	}
+	
+	#view-playerRanking-3 {
+		background-color: #f6deb2;
+	}
+	
+	
+	.view-playerName {
+		display: inline-block;
+		width: 60%;
+		margin-left: 15%;
+	}
+	
+	.view-playerScore {
+		display: inline-block;
+		text-align: right;
+		width: 20%;
+	}
+	
 	/*			DRAFT			*/
 
 	div#view-draft {
@@ -827,6 +877,8 @@ function RoundView(context, _data)
 			viewMatch.onViewAdded();
 		});
 		
+		console.log(context.currentRoundId + " - " + round.id);
+		
 		// configure button onRoundComplete
 		if (context.currentRoundId == round.id) 
 		{
@@ -944,7 +996,11 @@ function DraftView(_data)
 				document.getElementById('view-draft').style.display = 'block';
 				showRound(data.currentRoundId);
 			})],
-			["New Draft", onClickNewDraft]
+			["New Draft", function(){
+				document.getElementById('view-scoreboard').style.display = 'none';
+				document.getElementById('view-draft').style.display = 'block';
+				onClickNewDraft();
+			}]
 		], true);
 		
 		// configure view
@@ -967,6 +1023,7 @@ function DraftView(_data)
 	
 	var onClickNewDraft = function()
 	{
+		RoundData.roundIdCounter = -1;
 		deleteCurrentDraft();
 	}
 	
@@ -977,8 +1034,6 @@ function DraftView(_data)
 	
 	this.init = function()
 	{
-		//document.getElementById("btn-newDraft").onclick = this.onClickNewDraft;
-		
 		if (draftdata != undefined)
 		{			
 			this.visualizeDraftData(draftdata);
@@ -1006,8 +1061,15 @@ function ScoreboardView()
 				rank++;
 			}
 			
-			html += '<p>' + rank + ': ' + draftdata.players[results[i].playerId] + ': ';
-			html += results[i].score[0] + ' | ' + results[i].score[1] + ' | ' + results[i].score[2] + '</p>';
+			var id = rank > 3 ? '' : ('id="view-playerRanking-' + rank + '"');
+			
+			html += '<div class="view-scoreEntry">';
+			
+			html += '<div class="view-playerRanking" ' + id + '>' + rank + '</div>';
+			html += '<div class="view-playerName">' + draftdata.players[results[i].playerId] + '</div>';
+			html += '<div class="view-playerScore">' + results[i].score[0] + ' | ' + results[i].score[1] + ' | ' + results[i].score[2] + '</div>';
+			
+			html += '</div>';
 		}
 		
 		return html;
