@@ -1231,9 +1231,11 @@ function onSignedIn()
 
 function loadDraftOrCreateNew()
 {
+	console.log("1");
 	Main.database.loadDraftData().then(function(doc) {
 		if (doc.exists) {
 			Main.draftView.visualizeDraftData(doc.data());
+			console.log(doc.data());
 		} else {
 			showNewDraftView();
 		}
